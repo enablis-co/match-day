@@ -45,12 +45,12 @@ curl http://localhost:5001/clock
 # Set time to 5:30pm (match in progress)
 curl -X POST http://localhost:5001/clock \
   -H "Content-Type: application/json" \
-  -d '{"time": "2025-02-10T17:30:00Z"}'
+  -d '{"time": "2026-02-12T17:30:00Z"}'
 
 # Set time to 3pm (Arsenal vs Chelsea in progress)
 curl -X POST http://localhost:5001/clock \
   -H "Content-Type: application/json" \
-  -d '{"time": "2025-02-10T15:00:00Z"}'
+  -d '{"time": "2026-02-12T15:00:00Z"}'
 ```
 
 ## Service Dependencies
