@@ -1,0 +1,51 @@
+services:
+  events:
+    build: ./src/Events
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+
+  pricing:
+    build: ./src/Pricing
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - EVENTS_SERVICE_URL=http://events:8080
+
+  stock:
+    build: ./src/Stock
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - EVENTS_SERVICE_URL=http://events:8080
+
+  staffing:
+    build: ./src/Staffing
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - EVENTS_SERVICE_URL=http://events:8080
+      - STOCK_SERVICE_URL=http://stock:8080
+
+  aggregator:
+    build: ./src/Aggregator
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - EVENTS_SERVICE_URL=http://events:8080
+      - PRICING_SERVICE_URL=http://pricing:8080
+      - STOCK_SERVICE_URL=http://stock:8080
+      - STAFFING_SERVICE_URL=http://staffing:8080
+
+  dashboard:
+    build: ./src/Dashboard
+    ports:
+      - "5006:8080"
+    depends_on:
+      - aggregator
+      - events

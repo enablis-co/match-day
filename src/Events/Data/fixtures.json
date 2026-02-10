@@ -1,0 +1,26 @@
+{
+  "events": [
+    {
+      "eventId": "EVT-001",
+      "sport": "rugby",
+      "competition": "Six Nations",
+      "homeTeam": "England",
+      "awayTeam": "France",
+      "kickoff": "2025-02-10T17:00:00Z",
+      "expectedEnd": "2025-02-10T19:00:00Z",
+      "demandMultiplier": 2.0,
+      "status": "SCHEDULED"
+    },
+    {
+      "eventId": "EVT-002",
+      "sport": "football",
+      "competition": "Premier League",
+      "homeTeam": "Arsenal",
+      "awayTeam": "Chelsea",
+      "kickoff": "2025-02-10T14:00:00Z",
+      "expectedEnd": "2025-02-10T16:00:00Z",
+      "demandMultiplier": 1.5,
+      "status": "SCHEDULED"
+    }
+  ]
+}
