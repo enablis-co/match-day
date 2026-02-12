@@ -2,17 +2,6 @@ using Pricing.Models.Dtos;
 
 namespace Pricing.Services;
 
-public interface IMatchWindowService
-{
-    Task<MatchWindowContext> GetMatchWindowContextAsync(DateTime? time = null);
-}
-
-public record MatchWindowContext(
-    DateTime Timestamp,
-    bool IsActive,
-    double DemandMultiplier,
-    DateTime? EndTime);
-
 public class MatchWindowService : IMatchWindowService
 {
     private readonly IEventsService _eventsService;

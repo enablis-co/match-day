@@ -1,0 +1,4 @@
+# Copilot Instructions
+
+## Project Guidelines
+- For Pricing Service development: (1) One type per file ONLY - each file contains exactly ONE interface, class, record, or enum (exception: DTO containers are allowed to have multiple DTOs). (2) ALWAYS follow SOLID principles when creating new code. (3) Use constructor injection with interfaces - no concrete dependencies. (4) Register all dependencies in DI container as interface → implementation. (5) Keep interfaces focused and minimal (1-5 methods). (6) Naming: IMyService for interfaces, MyService for classes, MyContext for records, MyEnum for enums. (7) File organization: Models/, Data/, Services/, Endpoints/. (8) Before committing: verify each file has ONE type, SOLID compliant, uses DI, no `new` keyword for dependencies.

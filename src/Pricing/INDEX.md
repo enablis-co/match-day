@@ -3,13 +3,14 @@
 ## 📋 Quick Navigation
 
 ### 🚀 Getting Started
-1. **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Start here! Quick overview of changes
-2. **[REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)** - What changed and why
+1. **[COPILOT_INSTRUCTIONS.md](COPILOT_INSTRUCTIONS.md)** ⭐ START HERE - Development standards and rules
+2. **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** - Quick overview of changes
+3. **[REFACTORING_SUMMARY.md](REFACTORING_SUMMARY.md)** - What changed and why
 
 ### 📚 Deep Dives
-3. **[SOLID_REVIEW.md](SOLID_REVIEW.md)** - Detailed SOLID principles analysis
-4. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Architecture patterns and design
-5. **[SOLID_COMPLIANCE_REPORT.md](SOLID_COMPLIANCE_REPORT.md)** - Full compliance report
+4. **[SOLID_REVIEW.md](SOLID_REVIEW.md)** - Detailed SOLID principles analysis
+5. **[ARCHITECTURE.md](ARCHITECTURE.md)** - Architecture patterns and design
+6. **[SOLID_COMPLIANCE_REPORT.md](SOLID_COMPLIANCE_REPORT.md)** - Full compliance report
 
 ---
 
@@ -19,6 +20,8 @@
 |--------|--------|
 | **Build** | ✅ Passing |
 | **SOLID Compliance** | ✅ 100% |
+| **Development Standards** | ✅ Documented |
+| **One Type Per File** | ✅ Enforced |
 | **Breaking Changes** | ✅ None |
 | **Testability** | ✅ Excellent |
 | **Documentation** | ✅ Complete |
@@ -28,6 +31,16 @@
 
 ## 🎯 What's New
 
+### Development Standards (NEW)
+- **COPILOT_INSTRUCTIONS.md** - Comprehensive coding standards
+  - One type per file rule
+  - SOLID principles requirements
+  - File organization standards
+  - DI and constructor injection patterns
+  - Code style guidelines
+  - Common mistakes to avoid
+  - Before committing checklist
+
 ### New Interfaces (7 total)
 - `IOfferRepository` - Abstracts offer data access
 - `IProductRepository` - Abstracts product data access
@@ -35,7 +48,7 @@
 - `IOfferEvaluationService` - Abstracts offer evaluation
 - `IDiscountService` - Abstracts discount calculations
 - `IPricingService` - Abstracts pricing calculations
-- `IMatchWindowService` - Abstracts match window orchestration ⭐ NEW
+- `IMatchWindowService` - Abstracts match window orchestration
 
 ### New Services
 - `MatchWindowService` - Centralizes match window logic (eliminates duplication)
@@ -45,6 +58,8 @@
 - ✅ Code duplication eliminated
 - ✅ All services now mockable
 - ✅ Enterprise-ready architecture
+- ✅ **One type per file enforced**
+- ✅ **SOLID principles enforced**
 
 ---
 
@@ -63,31 +78,33 @@ src/Pricing/
 │       └── EventsDtos.cs
 │
 ├── Data/
-│   ├── IOfferRepository.cs ⭐ NEW
-│   ├── OfferRepository.cs (updated)
-│   ├── IProductRepository.cs ⭐ NEW
-│   └── ProductRepository.cs (updated)
+│   ├── IOfferRepository.cs
+│   ├── OfferRepository.cs
+│   ├── IProductRepository.cs
+│   └── ProductRepository.cs
 │
 ├── Services/
-│   ├── IEventsService.cs ⭐ NEW
-│   ├── EventsService.cs (updated)
-│   ├── IOfferEvaluationService.cs ⭐ NEW
-│   ├── OfferEvaluationService.cs (updated)
-│   ├── IDiscountService.cs ⭐ NEW
-│   ├── DiscountService.cs (updated)
-│   ├── IPricingService.cs ⭐ NEW
-│   ├── PricingService.cs (updated)
-│   ├── IMatchWindowService.cs ⭐ NEW
-│   └── MatchWindowService.cs ⭐ NEW
+│   ├── IEventsService.cs
+│   ├── EventsService.cs
+│   ├── IOfferEvaluationService.cs
+│   ├── OfferEvaluationService.cs
+│   ├── IDiscountService.cs
+│   ├── DiscountService.cs
+│   ├── IPricingService.cs
+│   ├── PricingService.cs
+│   ├── IMatchWindowService.cs ✅ (now separate)
+│   ├── MatchWindowContext.cs ✅ (now separate)
+│   └── MatchWindowService.cs
 │
 ├── Endpoints/
 │   ├── HealthEndpoints.cs
-│   ├── OffersEndpoints.cs (updated)
-│   └── PricingEndpoints.cs (updated)
+│   ├── OffersEndpoints.cs
+│   └── PricingEndpoints.cs
 │
-├── Program.cs (updated)
+├── Program.cs
 │
 └── 📚 Documentation/
+    ├── COPILOT_INSTRUCTIONS.md ⭐ NEW
     ├── QUICK_REFERENCE.md
     ├── REFACTORING_SUMMARY.md
     ├── SOLID_REVIEW.md
