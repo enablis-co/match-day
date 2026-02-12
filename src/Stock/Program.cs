@@ -83,6 +83,15 @@ app.MapGet("/stock/current", async (string pubId, string? category, IStockQueryS
     .WithName("GetCurrentStock")
     .WithOpenApi();
 
+app.MapPost("/stock/consumption", async (ConsumptionRequest request, IStockCommandService stockService) =>
+{
+    var success = await stockService.RecordConsumptionAsync(request.PubId, request.ProductId, request.Amount);
+    return success ? Results.Ok(new { message = "Consumption recorded" }) : Results.NotFound();
+})
+    .WithTags("Stock")
+    .WithName("RecordConsumption")
+    .WithOpenApi();
+
 app.MapGet("/stock/{productId}/forecast", async (string productId, string pubId, int hours, IForecastService forecastService) =>
 {
     var forecast = await forecastService.GetForecastAsync(pubId, productId, hours);
@@ -130,15 +139,6 @@ app.MapGet("/stock/alerts/critical", async (string pubId, IAlertService alertSer
 })
     .WithTags("Alerts")
     .WithName("GetCriticalAlerts")
-    .WithOpenApi();
-
-app.MapPost("/stock/consumption", async (ConsumptionRequest request, IStockService stockService) =>
-{
-    var success = await stockService.RecordConsumptionAsync(request.PubId, request.ProductId, request.Amount);
-    return success ? Results.Ok(new { message = "Consumption recorded" }) : Results.NotFound();
-})
-    .WithTags("Stock")
-    .WithName("RecordConsumption")
     .WithOpenApi();
 
 app.Run();
