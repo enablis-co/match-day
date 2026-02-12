@@ -11,6 +11,8 @@ public record PubStatusResponse(
     PricingSummary? Pricing,
     StockSummary? Stock,
     StaffingSummary? Staffing,
+    SurgeSummary? Surge,
+    SurgeForecast? SurgeForecast,
     List<PubAction> Actions,
     ServiceHealthMap ServiceHealth
 );
@@ -27,5 +29,6 @@ public record ServiceHealthMap(
     ServiceHealthEntry Events,
     ServiceHealthEntry Pricing,
     ServiceHealthEntry Stock,
-    ServiceHealthEntry Staffing
+    ServiceHealthEntry Staffing,
+    ServiceHealthEntry Surge
 );

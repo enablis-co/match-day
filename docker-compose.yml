@@ -41,6 +41,15 @@ services:
       - PRICING_SERVICE_URL=http://pricing:8080
       - STOCK_SERVICE_URL=http://stock:8080
       - STAFFING_SERVICE_URL=http://staffing:8080
+      - SURGE_SERVICE_URL=http://surge:8080
+
+  surge:
+    build: ./src/Surge
+    ports:
+      - "5007:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - EVENTS_SERVICE_URL=http://events:8080
 
   dashboard:
     build: ./src/Dashboard

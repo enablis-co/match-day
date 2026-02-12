@@ -29,6 +29,22 @@ const riskDots = {
   CRITICAL: 'bg-red-500 animate-pulse-red',
 }
 
+const intensityColors = {
+  QUIET: 'bg-green-600',
+  MODERATE: 'bg-lime-500',
+  BUSY: 'bg-amber-500',
+  HIGH: 'bg-orange-500',
+  CRITICAL: 'bg-red-600',
+}
+
+const intensityBg = {
+  QUIET: 'bg-green-600/20 text-green-400',
+  MODERATE: 'bg-lime-500/20 text-lime-400',
+  BUSY: 'bg-amber-500/20 text-amber-400',
+  HIGH: 'bg-orange-500/20 text-orange-400',
+  CRITICAL: 'bg-red-600/20 text-red-400',
+}
+
 const severityIcon = {
   HIGH: '\u{1F534}',
   MEDIUM: '\u{1F7E1}',
@@ -41,6 +57,7 @@ export default function App() {
   const [clock, setClock] = useState(null)
   const [error, setError] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
+  const [forecast, setForecast] = useState(null)
   const prevRisk = useRef(null)
 
   useEffect(() => {
@@ -53,6 +70,10 @@ export default function App() {
 
         const statusData = await statusRes.json()
         const clockData = await clockRes.json()
+
+        if (statusData.surgeForecast) {
+          setForecast(statusData.surgeForecast)
+        }
 
         // Check if aggregator is still a stub
         if (statusData.message && statusData.message.includes('Not implemented')) {
@@ -194,6 +215,63 @@ export default function App() {
           <p className="text-gray-500 text-xl">
             {status ? 'All stock levels OK' : 'Awaiting data'}
           </p>
+        )}
+      </div>
+
+      {/* Predicted Demand (Surge Forecast) */}
+      <div className="bg-gray-800 rounded-xl p-6 border border-gray-700 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
+            Predicted Demand
+          </h2>
+          {status?.surge && (
+            <span className={`px-3 py-1 rounded-full text-sm font-semibold ${intensityBg[status.surge.intensity] || 'bg-gray-600/20 text-gray-400'}`}>
+              Peak at {status.surge.peakHour} — {status.surge.intensity}
+            </span>
+          )}
+        </div>
+
+        {forecast?.forecast?.length > 0 ? (
+          <div className="space-y-2">
+            {forecast.forecast.map((hour, i) => {
+              const widthPct = Math.max((hour.surgeScore / 10) * 100, 2)
+              const barColor = intensityColors[hour.intensity] || 'bg-gray-600'
+              const isCurrentHour = i === 0
+              return (
+                <div key={i} className={`flex items-center gap-3 ${isCurrentHour ? 'bg-gray-700/50 -mx-2 px-2 py-1 rounded' : ''}`}>
+                  <span className="text-gray-400 font-mono text-sm w-14 shrink-0">
+                    {hour.hour}
+                    {isCurrentHour && <span className="text-xs text-amber-400 ml-1">now</span>}
+                  </span>
+                  <div className="flex-1 h-6 bg-gray-700 rounded overflow-hidden">
+                    <div
+                      className={`h-full ${barColor} rounded transition-all duration-500`}
+                      style={{ width: `${widthPct}%` }}
+                    />
+                  </div>
+                  <span className="text-gray-300 font-mono text-sm w-10 text-right shrink-0">
+                    {hour.surgeScore.toFixed(1)}
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-xl">
+            {status ? 'No forecast data available' : 'Awaiting data'}
+          </p>
+        )}
+
+        {forecast?.confidence && (
+          <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+            <span>Confidence: <span className="text-gray-300 font-semibold">{forecast.confidence}</span></span>
+            {forecast.signals?.temperature != null && (
+              <span>{forecast.signals.temperature.toFixed(1)}°C</span>
+            )}
+            {forecast.signals?.rainProbability != null && (
+              <span>{(forecast.signals.rainProbability * 100).toFixed(0)}% rain</span>
+            )}
+          </div>
         )}
       </div>
 
