@@ -63,3 +63,36 @@
 - Use new keyword for dependencies — always inject via constructor
 - Put multiple unrelated types in one file
 - Cross bounded context boundaries — do not make decisions about another service's domain
+
+## Tech Stack
+- Always use the latest stable .NET and ASP.NET Core versions
+- Always use the latest stable Swashbuckle.AspNetCore for Swagger/OpenAPI
+- Docker with multi-stage builds (SDK → aspnet runtime) — use latest stable tags
+- Dashboard: Vite + React (JSX) + Tailwind CSS — use latest stable versions
+- When adding NuGet packages, always use the latest stable release
+
+## Git Conventions
+- Branch naming: feat/{feature-name} (e.g. feat/pricing, feat/stock-service)
+- Commit messages: conventional commits (feat:, fix:, test:, docs:)
+- One branch per feature/service
+
+## Docker
+- Each service has its own Dockerfile using multi-stage build
+- All services listen on port 8080 inside their container
+- Docker Compose maps to external ports 5001–5006
+- Use docker compose up --build {service} to rebuild a single service
+
+## Error Handling
+- HTTP clients catch all exceptions and return null — never throw on upstream failure
+- Callers check for null and degrade gracefully
+- Log warnings on upstream failures, not errors
+
+## Data Conventions
+- Timestamps in ISO 8601 / UTC
+- IDs use format PREFIX-NNN (e.g. PUB-001, EVT-001, OFFER-001)
+- Enum values serialised as strings in JSON (use JsonStringEnumConverter)
+
+## Reference Documents
+- docs/HLD.md — high-level architecture and bounded contexts
+- docs/{service}-service.md — detailed spec per service (endpoints, models, business rules)
+- Refer to these specs before implementing new features
