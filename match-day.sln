@@ -16,6 +16,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stock", "src\Stock\Stock.csproj", "{B02104E9-C2C8-B7E3-5F66-FCD725CF2BAE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stock.Tests", "src\Stock.Tests\Stock.Tests.csproj", "{0DAF5857-F439-4E0E-B24C-3E70C836BD6E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pricing.Tests", "tests\Pricing.Tests\Pricing.Tests.csproj", "{4FA7AAE5-6B2A-7C55-3EAA-618F14ED3088}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
