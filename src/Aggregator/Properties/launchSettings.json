@@ -7,6 +7,20 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:56046;http://localhost:56047"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchBrowser": true,
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/swagger",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "EVENTS_SERVICE_URL": "http://host.docker.internal:5001",
+        "PRICING_SERVICE_URL": "http://host.docker.internal:5002",
+        "STOCK_SERVICE_URL": "http://host.docker.internal:5003",
+        "STAFFING_SERVICE_URL": "http://host.docker.internal:5004"
+      },
+      "publishAllPorts": true,
+      "httpPort": 56047
     }
   }
 }
