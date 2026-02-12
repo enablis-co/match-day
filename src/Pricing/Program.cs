@@ -1,4 +1,26 @@
+using Pricing.Data;
+using Pricing.Endpoints;
+using Pricing.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// ─── Logging & Tracing ────────────────────────────────────────────────────────
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Enable Activity tracing for diagnostics
+AppContext.SetSwitch("System.Diagnostics.ActivityListener.SuppressIsEnabledCheck", true);
+
+var listener = new System.Diagnostics.ActivityListener
+{
+    ShouldListenTo = _ => true,
+    Sample = (ref System.Diagnostics.ActivityCreationOptions<System.Diagnostics.ActivityContext> _) => System.Diagnostics.ActivitySamplingResult.AllData
+};
+System.Diagnostics.ActivitySource.AddActivityListener(listener);
+
+// ─── Services ─────────────────────────────────────────────────────────────────
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -11,33 +33,42 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var app = builder.Build();
-
 var eventsServiceUrl = Environment.GetEnvironmentVariable("EVENTS_SERVICE_URL") ?? "http://localhost:8080";
+builder.Services.AddHttpClient("EventsService", client =>
+{
+    client.BaseAddress = new Uri(eventsServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+// Register repositories and services with interfaces (DIP)
+builder.Services.AddSingleton<IOfferRepository, OfferRepository>();
+builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IEventsService, EventsService>();
+
+// Register base offer evaluation service
+builder.Services.AddScoped<IOfferEvaluationService, OfferEvaluationService>();
+
+// Wrap with tracing decorator
+builder.Services.Decorate<IOfferEvaluationService, TracedOfferEvaluationService>();
+
+builder.Services.AddScoped<IDiscountService, DiscountService>();
+builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IMatchWindowService, MatchWindowService>();
+
+// Register tracing services
+builder.Services.AddScoped<IOfferOperationTracer, OfferOperationTracer>();
+
+// ─── Build and Configure App ──────────────────────────────────────────────────
+
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-var stubResponse = new
-{
-    message = "Not implemented yet — this is your job!",
-    hint = "Check the service spec for endpoint details",
-    endpoints = new[] { "/offers/active", "/offers/{offerId}", "/pricing/current", "/pricing/match-day-status" }
-};
+// ─── Map Endpoints ────────────────────────────────────────────────────────────
 
-app.MapGet("/health", () => Results.Ok(new { status = "OK", service = "Pricing" }))
-    .WithTags("Health");
-
-app.MapGet("/offers/active", () => Results.Ok(stubResponse))
-    .WithTags("Offers");
-
-app.MapGet("/offers/{offerId}", (string offerId) => Results.Ok(stubResponse))
-    .WithTags("Offers");
-
-app.MapGet("/pricing/current", () => Results.Ok(stubResponse))
-    .WithTags("Pricing");
-
-app.MapGet("/pricing/match-day-status", () => Results.Ok(stubResponse))
-    .WithTags("Pricing");
+app.MapHealthEndpoints();
+app.MapOffersEndpoints();
+app.MapPricingEndpoints();
 
 app.Run();
