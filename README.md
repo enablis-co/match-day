@@ -17,7 +17,8 @@ docker-compose up --build
 | Stock | http://localhost:5003 | http://localhost:5003/swagger |
 | Staffing | http://localhost:5004 | http://localhost:5004/swagger |
 | Aggregator | http://localhost:5005 | http://localhost:5005/swagger |
-| Dashboard | http://localhost:5006 | — || Surge | http://localhost:5007 | http://localhost:5007/swagger |
+| Surge | http://localhost:5007 | http://localhost:5007/swagger |
+| Dashboard | http://localhost:5006 | — |
 ## Prerequisites
 
 - Docker Desktop installed and running
