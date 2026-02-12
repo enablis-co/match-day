@@ -4,6 +4,22 @@ using Pricing.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ─── Logging & Tracing ────────────────────────────────────────────────────────
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Enable Activity tracing for diagnostics
+AppContext.SetSwitch("System.Diagnostics.ActivityListener.SuppressIsEnabledCheck", true);
+
+var listener = new System.Diagnostics.ActivityListener
+{
+    ShouldListenTo = _ => true,
+    Sample = (ref System.Diagnostics.ActivityCreationOptions<System.Diagnostics.ActivityContext> _) => System.Diagnostics.ActivitySamplingResult.AllData
+};
+System.Diagnostics.ActivitySource.AddActivityListener(listener);
+
 // ─── Services ─────────────────────────────────────────────────────────────────
 
 builder.Services.AddEndpointsApiExplorer();
@@ -28,10 +44,19 @@ builder.Services.AddHttpClient("EventsService", client =>
 builder.Services.AddSingleton<IOfferRepository, OfferRepository>();
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IEventsService, EventsService>();
+
+// Register base offer evaluation service
 builder.Services.AddScoped<IOfferEvaluationService, OfferEvaluationService>();
+
+// Wrap with tracing decorator
+builder.Services.Decorate<IOfferEvaluationService, TracedOfferEvaluationService>();
+
 builder.Services.AddScoped<IDiscountService, DiscountService>();
 builder.Services.AddScoped<IPricingService, PricingService>();
 builder.Services.AddScoped<IMatchWindowService, MatchWindowService>();
+
+// Register tracing services
+builder.Services.AddScoped<IOfferOperationTracer, OfferOperationTracer>();
 
 // ─── Build and Configure App ──────────────────────────────────────────────────
 
