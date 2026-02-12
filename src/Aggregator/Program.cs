@@ -1,4 +1,17 @@
+using Aggregator.Clients;
+using Aggregator.Endpoints;
+using Aggregator.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// ─── Service URLs ─────────────────────────────────────────────────────────────
+
+var eventsServiceUrl = Environment.GetEnvironmentVariable("EVENTS_SERVICE_URL") ?? "http://localhost:5001";
+var pricingServiceUrl = Environment.GetEnvironmentVariable("PRICING_SERVICE_URL") ?? "http://localhost:5002";
+var stockServiceUrl = Environment.GetEnvironmentVariable("STOCK_SERVICE_URL") ?? "http://localhost:5003";
+var staffingServiceUrl = Environment.GetEnvironmentVariable("STAFFING_SERVICE_URL") ?? "http://localhost:5004";
+
+// ─── Swagger ──────────────────────────────────────────────────────────────────
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -11,54 +24,48 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var app = builder.Build();
+// ─── HTTP Clients ─────────────────────────────────────────────────────────────
 
-// Read upstream service URLs from environment (stubs don't use them yet)
-var eventsServiceUrl = Environment.GetEnvironmentVariable("EVENTS_SERVICE_URL") ?? "http://localhost:5001";
-var pricingServiceUrl = Environment.GetEnvironmentVariable("PRICING_SERVICE_URL") ?? "http://localhost:5002";
-var stockServiceUrl = Environment.GetEnvironmentVariable("STOCK_SERVICE_URL") ?? "http://localhost:5003";
-var staffingServiceUrl = Environment.GetEnvironmentVariable("STAFFING_SERVICE_URL") ?? "http://localhost:5004";
+builder.Services.AddHttpClient<IEventsClient, EventsClient>(client =>
+{
+    client.BaseAddress = new Uri(eventsServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+builder.Services.AddHttpClient<IPricingClient, PricingClient>(client =>
+{
+    client.BaseAddress = new Uri(pricingServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+builder.Services.AddHttpClient<IStockClient, StockClient>(client =>
+{
+    client.BaseAddress = new Uri(stockServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+builder.Services.AddHttpClient<IStaffingClient, StaffingClient>(client =>
+{
+    client.BaseAddress = new Uri(staffingServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+// ─── Services ─────────────────────────────────────────────────────────────────
+
+builder.Services.AddScoped<IRiskCalculator, RiskCalculator>();
+builder.Services.AddScoped<IActionPrioritiser, ActionPrioritiser>();
+builder.Services.AddScoped<IAggregatorService, AggregatorService>();
+
+// ─── Build and Configure App ──────────────────────────────────────────────────
+
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.MapGet("/health", () => Results.Ok(new
-{
-    status = "OK",
-    service = "Aggregator"
-}))
-.WithTags("Health")
-.WithName("GetHealth")
-.WithOpenApi();
+// ─── Map Endpoints ────────────────────────────────────────────────────────────
 
-app.MapGet("/status/{pubId}", (string pubId) => Results.Ok(new
-{
-    message = "Not implemented yet — this is your job!",
-    hint = "Check the service spec for endpoint details",
-    endpoints = new[] { "/status/{pubId}", "/status/{pubId}/summary", "/status/{pubId}/actions" }
-}))
-.WithTags("Status")
-.WithName("GetStatus")
-.WithOpenApi();
-
-app.MapGet("/status/{pubId}/summary", (string pubId) => Results.Ok(new
-{
-    message = "Not implemented yet — this is your job!",
-    hint = "Check the service spec for endpoint details",
-    endpoints = new[] { "/status/{pubId}", "/status/{pubId}/summary", "/status/{pubId}/actions" }
-}))
-.WithTags("Status")
-.WithName("GetStatusSummary")
-.WithOpenApi();
-
-app.MapGet("/status/{pubId}/actions", (string pubId) => Results.Ok(new
-{
-    message = "Not implemented yet — this is your job!",
-    hint = "Check the service spec for endpoint details",
-    endpoints = new[] { "/status/{pubId}", "/status/{pubId}/summary", "/status/{pubId}/actions" }
-}))
-.WithTags("Status")
-.WithName("GetStatusActions")
-.WithOpenApi();
+app.MapStatusEndpoints();
+app.MapHealthEndpoints();
 
 app.Run();
