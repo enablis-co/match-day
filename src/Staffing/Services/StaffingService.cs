@@ -265,12 +265,12 @@ public class StaffingService : IStaffingService
 
     private static Confidence CalculateConfidence(bool eventsAvailable, bool stockAvailable, List<Signal> signals)
     {
-        // Both unavailable → LOW
-        if (!eventsAvailable && !stockAvailable)
+        // Events is the primary signal (60% weight) — if it's unavailable, confidence is LOW
+        if (!eventsAvailable)
             return Confidence.LOW;
 
-        // One unavailable → MEDIUM
-        if (!eventsAvailable || !stockAvailable)
+        // Stock unavailable but events available → MEDIUM
+        if (!stockAvailable)
             return Confidence.MEDIUM;
 
         // All available and consistent → HIGH
