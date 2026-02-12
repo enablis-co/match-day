@@ -75,6 +75,8 @@
 - Branch naming: feat/{feature-name} (e.g. feat/pricing, feat/stock-service)
 - Commit messages: conventional commits (feat:, fix:, test:, docs:)
 - One branch per feature/service
+- Always pull latest from main before creating a new branch
+- PR descriptions must follow the template in .github/pull_request_template.md
 
 ## Docker
 - Each service has its own Dockerfile using multi-stage build
@@ -96,3 +98,7 @@
 - docs/HLD.md — high-level architecture and bounded contexts
 - docs/{service}-service.md — detailed spec per service (endpoints, models, business rules)
 - Refer to these specs before implementing new features
+
+## Tooling
+- GitHub MCP server configured in .vscode/mcp.json for PR creation and GitHub operations
+- VS Code 1.101+ required for MCP remote server support
