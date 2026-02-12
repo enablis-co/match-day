@@ -55,4 +55,12 @@ public class StockService : IStockQueryService, IStockCommandService
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<IEnumerable<StockLevel>> GetLowStockAlertsAsync(string pubId, double threshold = 30)
+    {
+        return await _context.StockLevels
+            .Include(s => s.Product)
+            .Where(s => s.PubId == pubId && s.CurrentLevel <= threshold)
+            .ToListAsync();
+    }
 }
