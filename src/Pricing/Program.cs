@@ -1,4 +1,10 @@
+using Pricing.Data;
+using Pricing.Endpoints;
+using Pricing.Services;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// ─── Services ─────────────────────────────────────────────────────────────────
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -11,33 +17,32 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-var app = builder.Build();
-
 var eventsServiceUrl = Environment.GetEnvironmentVariable("EVENTS_SERVICE_URL") ?? "http://localhost:8080";
+builder.Services.AddHttpClient("EventsService", client =>
+{
+    client.BaseAddress = new Uri(eventsServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+// Register repositories and services
+builder.Services.AddSingleton<OfferRepository>();
+builder.Services.AddSingleton<ProductRepository>();
+builder.Services.AddScoped<EventsService>();
+builder.Services.AddScoped<OfferEvaluationService>();
+builder.Services.AddScoped<DiscountService>();
+builder.Services.AddScoped<PricingService>();
+
+// ─── Build and Configure App ──────────────────────────────────────────────────
+
+var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
 
-var stubResponse = new
-{
-    message = "Not implemented yet — this is your job!",
-    hint = "Check the service spec for endpoint details",
-    endpoints = new[] { "/offers/active", "/offers/{offerId}", "/pricing/current", "/pricing/match-day-status" }
-};
+// ─── Map Endpoints ────────────────────────────────────────────────────────────
 
-app.MapGet("/health", () => Results.Ok(new { status = "OK", service = "Pricing" }))
-    .WithTags("Health");
-
-app.MapGet("/offers/active", () => Results.Ok(stubResponse))
-    .WithTags("Offers");
-
-app.MapGet("/offers/{offerId}", (string offerId) => Results.Ok(stubResponse))
-    .WithTags("Offers");
-
-app.MapGet("/pricing/current", () => Results.Ok(stubResponse))
-    .WithTags("Pricing");
-
-app.MapGet("/pricing/match-day-status", () => Results.Ok(stubResponse))
-    .WithTags("Pricing");
+app.MapHealthEndpoints();
+app.MapOffersEndpoints();
+app.MapPricingEndpoints();
 
 app.Run();
