@@ -20,11 +20,13 @@ public class ForecastService : IForecastService
 
     public async Task<ForecastResult?> GetForecastAsync(string pubId, string productId, int hours = 4)
     {
-        var stock = await _stockQueryService.GetProductStockAsync(pubId, productId);
+        var stockTask = _stockQueryService.GetProductStockAsync(pubId, productId);
+        var demandResultTask = _demandMultiplierService.GetDemandMultiplierAsync();
+
+        var stock = await stockTask;
         if (stock?.Product == null) return null;
 
-        // Get demand multiplier from Events Service (default to 1.0 if unavailable)
-        var demandResult = await _demandMultiplierService.GetDemandMultiplierAsync();
+        var demandResult = await demandResultTask;
         
         double adjustedRate = stock.Product.BaseConsumptionRate * demandResult.Multiplier;
         double? hoursRemaining = adjustedRate > 0 ? stock.CurrentLevel / adjustedRate : null;
