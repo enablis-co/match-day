@@ -7,48 +7,37 @@ public class ForecastService : IForecastService
     private readonly IStockQueryService _stockQueryService;
     private readonly IDemandMultiplierService _demandMultiplierService;
     private readonly IForecastConfidenceStrategy _confidenceStrategy;
+    private readonly IStockCalculationService _calculationService;
 
     public ForecastService(
         IStockQueryService stockQueryService, 
         IDemandMultiplierService demandMultiplierService,
-        IForecastConfidenceStrategy confidenceStrategy)
+        IForecastConfidenceStrategy confidenceStrategy,
+        IStockCalculationService calculationService)
     {
         _stockQueryService = stockQueryService;
         _demandMultiplierService = demandMultiplierService;
         _confidenceStrategy = confidenceStrategy;
+        _calculationService = calculationService;
     }
 
     public async Task<ForecastResult?> GetForecastAsync(string pubId, string productId, int hours = 4)
     {
-        var stock = await _stockQueryService.GetProductStockAsync(pubId, productId);
+        var stockTask = _stockQueryService.GetProductStockAsync(pubId, productId);
+        var demandResultTask = _demandMultiplierService.GetDemandMultiplierAsync();
+
+        var stock = await stockTask;
         if (stock?.Product == null) return null;
 
-        // Get demand multiplier from Events Service (default to 1.0 if unavailable)
-        var demandResult = await _demandMultiplierService.GetDemandMultiplierAsync();
+        var demandResult = await demandResultTask;
         
-        double adjustedRate = stock.Product.BaseConsumptionRate * demandResult.Multiplier;
-        double? hoursRemaining = adjustedRate > 0 ? stock.CurrentLevel / adjustedRate : null;
+        double adjustedRate = _calculationService.CalculateAdjustedRate(stock.Product.BaseConsumptionRate, demandResult.Multiplier);
+        double? hoursRemaining = _calculationService.CalculateHoursRemaining(stock.CurrentLevel, adjustedRate);
+        DateTime? depletionTime = _calculationService.CalculateDepletionTime(hoursRemaining);
+        bool willDeplete = _calculationService.WillDeplete(hoursRemaining, hours);
         
-        DateTime? depletionTime = hoursRemaining.HasValue 
-            ? DateTime.UtcNow.AddHours(hoursRemaining.Value) 
-            : null;
-        
-        bool willDeplete = hoursRemaining.HasValue && hoursRemaining.Value <= hours;
-        
-        string confidence = demandResult switch
-        {
-            { IsDefault: true } => "LOW",
-            { Multiplier: >= 2.0 } => "HIGH",
-            { Multiplier: >= 1.5 } => "MEDIUM",
-            _ => "LOW"
-        };
-
-        string recommendation = stock.CurrentLevel switch
-        {
-            <= 10 => "URGENT: Restock immediately",
-            <= 30 when willDeplete => "Restock before match ends",
-            _ => "Stock levels adequate"
-        };
+        string confidence = _confidenceStrategy.CalculateConfidence(demandResult, stock.CurrentLevel, willDeplete);
+        string recommendation = _confidenceStrategy.GenerateRecommendation(stock.CurrentLevel, willDeplete);
 
         return new ForecastResult(
             pubId,

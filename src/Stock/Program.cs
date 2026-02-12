@@ -35,6 +35,7 @@ builder.Services.AddScoped<IAlertService, AlertService>();
 builder.Services.AddScoped<IForecastService, ForecastService>();
 builder.Services.AddScoped<IAlertSeverityStrategy, DefaultAlertSeverityStrategy>();
 builder.Services.AddScoped<IForecastConfidenceStrategy, DefaultForecastConfidenceStrategy>();
+builder.Services.AddScoped<IStockCalculationService, StockCalculationService>();
 builder.Services.AddHttpClient<IDemandMultiplierService, DemandMultiplierService>((sp, client) =>
 {
     var options = sp.GetRequiredService<IOptions<EventsServiceOptions>>().Value;
@@ -80,6 +81,15 @@ app.MapGet("/stock/current", async (string pubId, string? category, IStockQueryS
 })
     .WithTags("Stock")
     .WithName("GetCurrentStock")
+    .WithOpenApi();
+
+app.MapPost("/stock/consumption", async (ConsumptionRequest request, IStockCommandService stockService) =>
+{
+    var success = await stockService.RecordConsumptionAsync(request.PubId, request.ProductId, request.Amount);
+    return success ? Results.Ok(new { message = "Consumption recorded" }) : Results.NotFound();
+})
+    .WithTags("Stock")
+    .WithName("RecordConsumption")
     .WithOpenApi();
 
 app.MapGet("/stock/{productId}/forecast", async (string productId, string pubId, int hours, IForecastService forecastService) =>
@@ -129,15 +139,6 @@ app.MapGet("/stock/alerts/critical", async (string pubId, IAlertService alertSer
 })
     .WithTags("Alerts")
     .WithName("GetCriticalAlerts")
-    .WithOpenApi();
-
-app.MapPost("/stock/consumption", async (ConsumptionRequest request, IStockService stockService) =>
-{
-    var success = await stockService.RecordConsumptionAsync(request.PubId, request.ProductId, request.Amount);
-    return success ? Results.Ok(new { message = "Consumption recorded" }) : Results.NotFound();
-})
-    .WithTags("Stock")
-    .WithName("RecordConsumption")
     .WithOpenApi();
 
 app.Run();
