@@ -35,6 +35,7 @@ builder.Services.AddScoped<IAlertService, AlertService>();
 builder.Services.AddScoped<IForecastService, ForecastService>();
 builder.Services.AddScoped<IAlertSeverityStrategy, DefaultAlertSeverityStrategy>();
 builder.Services.AddScoped<IForecastConfidenceStrategy, DefaultForecastConfidenceStrategy>();
+builder.Services.AddScoped<IStockCalculationService, StockCalculationService>();
 builder.Services.AddHttpClient<IDemandMultiplierService, DemandMultiplierService>((sp, client) =>
 {
     var options = sp.GetRequiredService<IOptions<EventsServiceOptions>>().Value;

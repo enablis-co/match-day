@@ -10,15 +10,18 @@ public class AlertService : IAlertService
     private readonly StockDbContext _context;
     private readonly IDemandMultiplierService _demandMultiplierService;
     private readonly IAlertSeverityStrategy _severityStrategy;
+    private readonly IStockCalculationService _calculationService;
 
     public AlertService(
         StockDbContext context, 
         IDemandMultiplierService demandMultiplierService,
-        IAlertSeverityStrategy severityStrategy)
+        IAlertSeverityStrategy severityStrategy,
+        IStockCalculationService calculationService)
     {
         _context = context;
         _demandMultiplierService = demandMultiplierService;
         _severityStrategy = severityStrategy;
+        _calculationService = calculationService;
     }
 
     public async Task<IEnumerable<StockAlert>> GetStockAlertsAsync(string pubId, double hoursThreshold = 12)
