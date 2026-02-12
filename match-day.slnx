@@ -1,0 +1,18 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/src/">
+    <Project Path="src/Aggregator/Aggregator.csproj" />
+    <Project Path="src/Events/Events.csproj" />
+    <Project Path="src/Pricing/Pricing.csproj" />
+    <Project Path="src/Staffing/Staffing.csproj" />
+    <Project Path="src/Stock.Tests/Stock.Tests.csproj" />
+    <Project Path="src/Stock/Stock.csproj" />
+    <Project Path="src/Surge.Tests/Surge.Tests.csproj" />
+    <Project Path="src/Surge/Surge.csproj" />
+  </Folder>
+  <Project Path="tests/Pricing.Tests/Pricing.Tests.csproj" />
+</Solution>
