@@ -17,16 +17,15 @@ docker-compose up --build
 | Stock | http://localhost:5003 | http://localhost:5003/swagger |
 | Staffing | http://localhost:5004 | http://localhost:5004/swagger |
 | Aggregator | http://localhost:5005 | http://localhost:5005/swagger |
-| Dashboard | http://localhost:5006 | — |
-
+| Dashboard | http://localhost:5006 | — || Surge | http://localhost:5007 | http://localhost:5007/swagger |
 ## Prerequisites
 
 - Docker Desktop installed and running
-- Ports 5001–5006 available
+- Ports 5001–5007 available
 
 ## Workshop Instructions
 
-1. Pick a service (Pricing, Stock, Staffing, or Aggregator)
+1. Pick a service (Pricing, Stock, Staffing, Surge, or Aggregator)
 2. Check the spec in `/docs`
 3. Build endpoints using Copilot
 4. Test via Swagger
@@ -58,8 +57,9 @@ curl -X POST http://localhost:5001/clock \
 ```
 Events ← Pricing
 Events ← Stock
+Events ← Surge
 Events + Stock ← Staffing
-Events + Pricing + Stock + Staffing ← Aggregator
+Events + Pricing + Stock + Staffing + Surge ← Aggregator
 Aggregator + Events ← Dashboard (http://localhost:5006)
 ```
 
