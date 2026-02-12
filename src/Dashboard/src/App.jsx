@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import ScenarioPlayer from './ScenarioPlayer'
 
 const AGGREGATOR_URL = window.__ENV__?.AGGREGATOR_URL || '/api/aggregator'
 const EVENTS_URL = window.__ENV__?.EVENTS_URL || '/api/events'
@@ -43,43 +44,43 @@ export default function App() {
   const [lastUpdate, setLastUpdate] = useState(null)
   const prevRisk = useRef(null)
 
-  useEffect(() => {
-    async function poll() {
-      try {
-        const [statusRes, clockRes] = await Promise.all([
-          fetch(`${AGGREGATOR_URL}/status/PUB-001`),
-          fetch(`${EVENTS_URL}/clock`),
-        ])
+  const poll = useCallback(async () => {
+    try {
+      const [statusRes, clockRes] = await Promise.all([
+        fetch(`${AGGREGATOR_URL}/status/PUB-001`),
+        fetch(`${EVENTS_URL}/clock`),
+      ])
 
-        const statusData = await statusRes.json()
-        const clockData = await clockRes.json()
+      const statusData = await statusRes.json()
+      const clockData = await clockRes.json()
 
-        // Check if aggregator is still a stub
-        if (statusData.message && statusData.message.includes('Not implemented')) {
-          setStatus(null)
-        } else {
-          setStatus(statusData)
-        }
-
-        setClock(clockData.currentTime)
-        setLastUpdate(new Date())
-        setError(null)
-      } catch (e) {
-        setError('Unable to reach services')
+      // Check if aggregator is still a stub
+      if (statusData.message && statusData.message.includes('Not implemented')) {
+        setStatus(null)
+      } else {
+        setStatus(statusData)
       }
-    }
 
+      setClock(clockData.currentTime)
+      setLastUpdate(new Date())
+      setError(null)
+    } catch (e) {
+      setError('Unable to reach services')
+    }
+  }, [])
+
+  useEffect(() => {
     poll()
     const interval = setInterval(poll, POLL_INTERVAL)
     return () => clearInterval(interval)
-  }, [])
+  }, [poll])
 
   const riskLevel = status?.status?.riskLevel || 'LOW'
   const overall = status?.status?.overall || 'NORMAL'
   const matchDay = status?.status?.matchDay || false
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white p-6 font-sans">
+    <div className="min-h-screen bg-gray-950 text-white p-6 pb-32 font-sans">
       {/* Header */}
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold tracking-tight">
@@ -241,6 +242,9 @@ export default function App() {
           </span>
         )}
       </div>
+
+      {/* Scenario Player */}
+      <ScenarioPlayer currentClock={clock} onClockSet={poll} />
     </div>
   )
 }

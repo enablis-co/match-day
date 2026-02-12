@@ -47,17 +47,13 @@ public class EventsClient : IEventsClient
         var first = activeEvents[0];
         var description = first.GetProperty("description").GetString();
         var demandMultiplier = first.GetProperty("demandMultiplier").GetDouble();
-        var minutesRemaining = first.GetProperty("minutesRemaining").GetInt32();
-
-        var endsAt = time.HasValue
-            ? time.Value.AddMinutes(minutesRemaining)
-            : DateTime.UtcNow.AddMinutes(minutesRemaining);
+        var expectedEnd = first.GetProperty("expectedEnd").GetDateTime();
 
         return new EventSummary(
             Active: true,
             Current: description,
             DemandMultiplier: demandMultiplier,
-            EndsAt: endsAt
+            EndsAt: expectedEnd
         );
     }
 }

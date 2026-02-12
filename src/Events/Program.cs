@@ -73,7 +73,8 @@ app.MapGet("/events/active", (DateTime? time) =>
             e.EventId,
             Description = $"{e.HomeTeam} vs {e.AwayTeam}",
             MinutesRemaining = Math.Max(0, (int)(e.ExpectedEnd - now).TotalMinutes),
-            e.DemandMultiplier
+            e.DemandMultiplier,
+            e.ExpectedEnd
         })
         .ToList();
 
