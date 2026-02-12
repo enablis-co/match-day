@@ -3,7 +3,7 @@ using Pricing.Models.Dtos;
 
 namespace Pricing.Services;
 
-public class EventsService
+public class EventsService : IEventsService
 {
     private readonly IHttpClientFactory _httpClientFactory;
 

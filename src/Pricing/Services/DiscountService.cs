@@ -2,7 +2,7 @@ using Pricing.Models;
 
 namespace Pricing.Services;
 
-public class DiscountService
+public class DiscountService : IDiscountService
 {
     public decimal CalculateDiscount(decimal basePrice, Offer offer)
     {

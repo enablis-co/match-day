@@ -18,27 +18,13 @@ public static class OffersEndpoints
     private static async Task<IResult> GetActiveOffers(
         string? pubId,
         DateTime? time,
-        EventsService eventsService,
-        OfferEvaluationService offerEvaluationService,
-        OfferRepository offerRepository)
+        IMatchWindowService matchWindowService,
+        IOfferEvaluationService offerEvaluationService)
     {
-        var now = time ?? DateTime.UtcNow;
         var pub = pubId ?? "PUB-001";
+        var context = await matchWindowService.GetMatchWindowContextAsync(time);
 
-        var eventsResponse = await eventsService.GetActiveEventsAsync(time);
-        var demandResponse = await eventsService.GetDemandMultiplierAsync(time);
-
-        var matchWindowActive = eventsResponse?.InMatchWindow ?? false;
-        var demandMultiplier = demandResponse?.Multiplier ?? 1.0;
-
-        DateTime? matchWindowEnd = null;
-        if (eventsResponse?.ActiveEvents?.Any() == true)
-        {
-            matchWindowEnd = eventsResponse.ActiveEvents
-                .Max(e => now.AddMinutes(e.MinutesRemaining + 30));
-        }
-
-        var evaluations = offerEvaluationService.EvaluateAllOffers(now, matchWindowActive, demandMultiplier, matchWindowEnd)
+        var evaluations = offerEvaluationService.EvaluateAllOffers(context.Timestamp, context.IsActive, context.DemandMultiplier, context.EndTime)
             .Where(e => e.Status != OfferStatus.INACTIVE)
             .ToList();
 
@@ -50,9 +36,9 @@ public static class OffersEndpoints
                 e.Offer.Name,
                 e.Offer.Description,
                 Status = "ACTIVE",
-                EndsAt = e.Offer.Schedule.EndTime.ToTimeSpan() < TimeOnly.FromDateTime(now).ToTimeSpan()
+                EndsAt = e.Offer.Schedule.EndTime.ToTimeSpan() < TimeOnly.FromDateTime(context.Timestamp).ToTimeSpan()
                     ? (DateTime?)null
-                    : now.Date.Add(e.Offer.Schedule.EndTime.ToTimeSpan())
+                    : context.Timestamp.Date.Add(e.Offer.Schedule.EndTime.ToTimeSpan())
             })
             .ToList();
 
@@ -70,13 +56,13 @@ public static class OffersEndpoints
         return Results.Ok(new
         {
             PubId = pub,
-            Timestamp = now,
+            Timestamp = context.Timestamp,
             ActiveOffers = activeOffers,
             SuspendedOffers = suspendedOffers
         });
     }
 
-    private static IResult GetOfferDetails(string offerId, OfferRepository offerRepository)
+    private static IResult GetOfferDetails(string offerId, IOfferRepository offerRepository)
     {
         var offer = offerRepository.GetById(offerId);
         if (offer is null)

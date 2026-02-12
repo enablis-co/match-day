@@ -24,13 +24,14 @@ builder.Services.AddHttpClient("EventsService", client =>
     client.Timeout = TimeSpan.FromSeconds(5);
 });
 
-// Register repositories and services
-builder.Services.AddSingleton<OfferRepository>();
-builder.Services.AddSingleton<ProductRepository>();
-builder.Services.AddScoped<EventsService>();
-builder.Services.AddScoped<OfferEvaluationService>();
-builder.Services.AddScoped<DiscountService>();
-builder.Services.AddScoped<PricingService>();
+// Register repositories and services with interfaces (DIP)
+builder.Services.AddSingleton<IOfferRepository, OfferRepository>();
+builder.Services.AddSingleton<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IEventsService, EventsService>();
+builder.Services.AddScoped<IOfferEvaluationService, OfferEvaluationService>();
+builder.Services.AddScoped<IDiscountService, DiscountService>();
+builder.Services.AddScoped<IPricingService, PricingService>();
+builder.Services.AddScoped<IMatchWindowService, MatchWindowService>();
 
 // ─── Build and Configure App ──────────────────────────────────────────────────
 

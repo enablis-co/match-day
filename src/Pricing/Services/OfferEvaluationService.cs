@@ -3,11 +3,11 @@ using Pricing.Models;
 
 namespace Pricing.Services;
 
-public class OfferEvaluationService
+public class OfferEvaluationService : IOfferEvaluationService
 {
-    private readonly OfferRepository _offerRepository;
+    private readonly IOfferRepository _offerRepository;
 
-    public OfferEvaluationService(OfferRepository offerRepository)
+    public OfferEvaluationService(IOfferRepository offerRepository)
     {
         _offerRepository = offerRepository;
     }

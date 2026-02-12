@@ -1,6 +1,6 @@
 namespace Pricing.Data;
 
-public class ProductRepository
+public class ProductRepository : IProductRepository
 {
     private readonly Dictionary<string, decimal> _baseProducts;
 

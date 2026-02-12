@@ -3,16 +3,16 @@ using Pricing.Models;
 
 namespace Pricing.Services;
 
-public class PricingService
+public class PricingService : IPricingService
 {
-    private readonly ProductRepository _productRepository;
-    private readonly OfferEvaluationService _offerEvaluationService;
-    private readonly DiscountService _discountService;
+    private readonly IProductRepository _productRepository;
+    private readonly IOfferEvaluationService _offerEvaluationService;
+    private readonly IDiscountService _discountService;
 
     public PricingService(
-        ProductRepository productRepository,
-        OfferEvaluationService offerEvaluationService,
-        DiscountService discountService)
+        IProductRepository productRepository,
+        IOfferEvaluationService offerEvaluationService,
+        IDiscountService discountService)
     {
         _productRepository = productRepository;
         _offerEvaluationService = offerEvaluationService;

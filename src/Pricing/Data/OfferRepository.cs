@@ -2,7 +2,7 @@ using Pricing.Models;
 
 namespace Pricing.Data;
 
-public class OfferRepository
+public class OfferRepository : IOfferRepository
 {
     private readonly List<Offer> _offers;
 
