@@ -10,6 +10,7 @@ public class AggregatorService : IAggregatorService
     private readonly IPricingClient _pricingClient;
     private readonly IStockClient _stockClient;
     private readonly IStaffingClient _staffingClient;
+    private readonly ISurgeClient _surgeClient;
     private readonly IRiskCalculator _riskCalculator;
     private readonly IActionPrioritiser _actionPrioritiser;
     private readonly ILogger<AggregatorService> _logger;
@@ -19,6 +20,7 @@ public class AggregatorService : IAggregatorService
         IPricingClient pricingClient,
         IStockClient stockClient,
         IStaffingClient staffingClient,
+        ISurgeClient surgeClient,
         IRiskCalculator riskCalculator,
         IActionPrioritiser actionPrioritiser,
         ILogger<AggregatorService> logger)
@@ -27,6 +29,7 @@ public class AggregatorService : IAggregatorService
         _pricingClient = pricingClient;
         _stockClient = stockClient;
         _staffingClient = staffingClient;
+        _surgeClient = surgeClient;
         _riskCalculator = riskCalculator;
         _actionPrioritiser = actionPrioritiser;
         _logger = logger;
@@ -35,7 +38,7 @@ public class AggregatorService : IAggregatorService
     public async Task<PubStatusResponse> GetStatusAsync(string pubId, DateTime? time)
     {
         var now = time ?? DateTime.UtcNow;
-        var (events, eventsHealth, pricing, pricingHealth, stock, stockHealth, staffing, staffingHealth) =
+        var (events, eventsHealth, pricing, pricingHealth, stock, stockHealth, staffing, staffingHealth, surge, surgeForecast, surgeHealth) =
             await CallAllServicesAsync(pubId, time);
 
         var matchDay = events?.Active ?? false;
@@ -52,8 +55,10 @@ public class AggregatorService : IAggregatorService
             Pricing: pricing,
             Stock: stock,
             Staffing: staffing,
+            Surge: surge,
+            SurgeForecast: surgeForecast,
             Actions: actions,
-            ServiceHealth: new ServiceHealthMap(eventsHealth, pricingHealth, stockHealth, staffingHealth)
+            ServiceHealth: new ServiceHealthMap(eventsHealth, pricingHealth, stockHealth, staffingHealth, surgeHealth)
         );
     }
 
@@ -92,13 +97,14 @@ public class AggregatorService : IAggregatorService
         var pricingHealth = await CheckServiceHealthAsync("Pricing", () => _pricingClient.GetActiveOffersAsync("PUB-001", null));
         var stockHealth = await CheckServiceHealthAsync("Stock", () => _stockClient.GetStockAlertsAsync("PUB-001"));
         var staffingHealth = await CheckServiceHealthAsync("Staffing", () => _staffingClient.GetRecommendationAsync("PUB-001", null));
+        var surgeHealth = await CheckServiceHealthAsync("Surge", () => _surgeClient.GetPeakAsync("PUB-001"));
 
-        var allOk = new[] { eventsHealth, pricingHealth, stockHealth, staffingHealth }
+        var allOk = new[] { eventsHealth, pricingHealth, stockHealth, staffingHealth, surgeHealth }
             .All(h => h.Status == ServiceStatus.OK);
 
         return new HealthResponse(
             Status: allOk ? "HEALTHY" : "DEGRADED",
-            Services: new ServiceHealthMap(eventsHealth, pricingHealth, stockHealth, staffingHealth)
+            Services: new ServiceHealthMap(eventsHealth, pricingHealth, stockHealth, staffingHealth, surgeHealth)
         );
     }
 
@@ -106,22 +112,30 @@ public class AggregatorService : IAggregatorService
         EventSummary? Events, ServiceHealthEntry EventsHealth,
         PricingSummary? Pricing, ServiceHealthEntry PricingHealth,
         StockSummary? Stock, ServiceHealthEntry StockHealth,
-        StaffingSummary? Staffing, ServiceHealthEntry StaffingHealth)>
+        StaffingSummary? Staffing, ServiceHealthEntry StaffingHealth,
+        SurgeSummary? Surge, SurgeForecast? SurgeForecast, ServiceHealthEntry SurgeHealth)>
         CallAllServicesAsync(string pubId, DateTime? time)
     {
         var eventsTask = CallWithTimingAsync("Events", () => _eventsClient.GetActiveEventsAsync(time));
         var pricingTask = CallWithTimingAsync("Pricing", () => _pricingClient.GetActiveOffersAsync(pubId, time));
         var stockTask = CallWithTimingAsync("Stock", () => _stockClient.GetStockAlertsAsync(pubId));
         var staffingTask = CallWithTimingAsync("Staffing", () => _staffingClient.GetRecommendationAsync(pubId, time));
+        var surgeTask = CallWithTimingAsync("Surge", async () => (await _surgeClient.GetPeakAsync(pubId))!);
+        var forecastTask = CallWithTimingAsync("SurgeForecast", async () => (await _surgeClient.GetForecastAsync(pubId, 12))!);
 
-        await Task.WhenAll(eventsTask, pricingTask, stockTask, staffingTask);
+        await Task.WhenAll(eventsTask, pricingTask, stockTask, staffingTask, surgeTask, forecastTask);
 
         var (events, eventsHealth) = await eventsTask;
         var (pricing, pricingHealth) = await pricingTask;
         var (stock, stockHealth) = await stockTask;
         var (staffing, staffingHealth) = await staffingTask;
+        var (surge, surgeHealth) = await surgeTask;
+        var (forecast, _) = await forecastTask;
 
-        return (events, eventsHealth, pricing, pricingHealth, stock, stockHealth, staffing, staffingHealth);
+        // Use the worse health of peak + forecast for the single "Surge" health entry
+        var combinedSurgeHealth = surgeHealth.Status == ServiceStatus.OK ? surgeHealth : surgeHealth;
+
+        return (events, eventsHealth, pricing, pricingHealth, stock, stockHealth, staffing, staffingHealth, surge, forecast, combinedSurgeHealth);
     }
 
     private async Task<(T? Result, ServiceHealthEntry Health)> CallWithTimingAsync<T>(

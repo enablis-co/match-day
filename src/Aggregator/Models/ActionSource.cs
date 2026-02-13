@@ -6,5 +6,6 @@ public enum ActionSource
     PRICING,
     STOCK,
     STAFFING,
+    SURGE,
     AGGREGATOR
 }

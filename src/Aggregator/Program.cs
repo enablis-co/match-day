@@ -10,6 +10,7 @@ var eventsServiceUrl = Environment.GetEnvironmentVariable("EVENTS_SERVICE_URL") 
 var pricingServiceUrl = Environment.GetEnvironmentVariable("PRICING_SERVICE_URL") ?? "http://localhost:5002";
 var stockServiceUrl = Environment.GetEnvironmentVariable("STOCK_SERVICE_URL") ?? "http://localhost:5003";
 var staffingServiceUrl = Environment.GetEnvironmentVariable("STAFFING_SERVICE_URL") ?? "http://localhost:5004";
+var surgeServiceUrl = Environment.GetEnvironmentVariable("SURGE_SERVICE_URL") ?? "http://localhost:5007";
 
 // ─── Swagger ──────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,12 @@ builder.Services.AddHttpClient<IStockClient, StockClient>(client =>
 builder.Services.AddHttpClient<IStaffingClient, StaffingClient>(client =>
 {
     client.BaseAddress = new Uri(staffingServiceUrl);
+    client.Timeout = TimeSpan.FromSeconds(5);
+});
+
+builder.Services.AddHttpClient<ISurgeClient, SurgeClient>(client =>
+{
+    client.BaseAddress = new Uri(surgeServiceUrl);
     client.Timeout = TimeSpan.FromSeconds(5);
 });
 
